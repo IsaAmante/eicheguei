@@ -6,16 +6,19 @@ class Invitation {
   Condominium condominium;
   String? condRef;
   AccessType access;
+  bool accepted;
   Invitation({
     required this.condominium,
     this.condRef,
     required this.access,
+    required this.accepted,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'condominium': condominium.toMap(),
-      'access': access,
+      'condominium': condominium.condRef,
+      'access': access.toString(),
+      'accepted': accepted,
     };
   }
 
@@ -23,6 +26,7 @@ class Invitation {
     return Invitation(
       condominium: Condominium.fromMap(map['condominium']),
       access: AccessType.user,
+      accepted: map['accepted'] ?? false,
     );
   }
 

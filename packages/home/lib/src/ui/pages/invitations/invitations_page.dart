@@ -4,11 +4,14 @@ import 'package:home/src/ui/controllers/home_controller.dart';
 import 'package:home/src/ui/pages/forms_app_bar.dart';
 
 class InvitationsPage extends StatelessWidget {
-  const InvitationsPage({Key? key}) : super(key: key);
+  InvitationsPage({Key? key}) : super(key: key);
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    var controller = context.read<HomeController>();
+    var controller = context.watch<HomeController>();
+    controller.clearEmailController();
     return Scaffold(
       appBar: const FormsAppBar(),
       body: GestureDetector(
@@ -17,28 +20,45 @@ class InvitationsPage extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                Text('Enviar convite para').headline4(),
-                const SizedBox(
-                  height: 16,
-                ),
-                CustomTextField(
-                  hintText: 'E-mail',
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                accessTypeDropdown(),
-                const SizedBox(
-                  height: 16,
-                ),
-                PrimaryButton(
-                  text: 'Enviar Convite',
-                  onPressed: () async {},
-                ),
-              ],
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  Text('Enviar convite para').headline4(),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  CustomTextField(
+                    hintText: 'E-mail',
+                    controller: controller.emailController,
+                    validator: (value) =>
+                        (Validations.isAValidEmailAddress(value ?? ''))
+                            ? null
+                            : 'E-mail inválido',
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  accessTypeDropdown(controller),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  PrimaryButton(
+                    text: 'Enviar Convite',
+                    loading: controller.isLoading,
+                    onPressed: () async {
+                      if (_formKey.currentState != null &&
+                          _formKey.currentState!.validate()) {
+                        await controller.sendInvitation();
+                        await Alerts.showMessage(
+                            context: context, title: 'Convite enviado!');
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -46,7 +66,7 @@ class InvitationsPage extends StatelessWidget {
     );
   }
 
-  Widget accessTypeDropdown() {
+  Widget accessTypeDropdown(HomeController controller) {
     return InputDecorator(
       decoration: InputDecoration(
         contentPadding:
@@ -59,9 +79,9 @@ class InvitationsPage extends StatelessWidget {
         ),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
+        child: DropdownButton<AccessType>(
           isDense: true,
-          value: 0,
+          value: controller.invitationAccess,
           elevation: 2,
           style: TextStyle(
             color: ColorPalette.neutral600,
@@ -69,19 +89,21 @@ class InvitationsPage extends StatelessWidget {
           isExpanded: true,
           items: [
             DropdownMenuItem(
-              value: 0,
+              value: AccessType.user,
               child: Text(
                 'Usuário',
               ).body1(),
             ),
             DropdownMenuItem(
-              value: 1,
+              value: AccessType.concierge,
               child: Text(
                 'Porteiro',
               ).body1(),
             ),
           ],
-          onChanged: (value) async {},
+          onChanged: (value) async {
+            if (value != null) controller.changeAccessType(value);
+          },
         ),
       ),
     );

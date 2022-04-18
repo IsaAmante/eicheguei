@@ -117,7 +117,7 @@ class _DashboardPageState extends State<DashboardPage>
                             context,
                             MaterialPageRoute<void>(
                               builder: (BuildContext context) =>
-                                  const InvitationsPage(),
+                                  InvitationsPage(),
                             ),
                           );
                         },

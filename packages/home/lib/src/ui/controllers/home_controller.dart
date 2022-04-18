@@ -1,13 +1,17 @@
 import 'package:authentication/authentication.dart';
 import 'package:common/common.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:home/src/data/services/invitations_service.dart';
 import 'package:home/src/data/services/orders_service.dart';
 
 class HomeController extends Controller {
   final UserService userService;
   final OrdersService ordersService;
+  final InvitationsService invitationsService;
   HomeController(
     this.userService,
     this.ordersService,
+    this.invitationsService,
   );
 
   bool _editingMode = false;
@@ -81,5 +85,28 @@ class HomeController extends Controller {
     }
   }
 
-  Future<void> sendInvitation() async {}
+  AccessType _invitationAccess = AccessType.user;
+  AccessType get invitationAccess => _invitationAccess;
+
+  TextEditingController emailController = TextEditingController();
+
+  void clearEmailController() {
+    emailController.clear();
+  }
+
+  void changeAccessType(AccessType type) {
+    _invitationAccess = type;
+    notifyListeners();
+  }
+
+  Future<void> sendInvitation() async {
+    setStatus(Status.loading);
+    Invitation invitation = Invitation(
+      accepted: false,
+      condominium: userService.user!.condominium!,
+      access: _invitationAccess,
+    );
+    await invitationsService.sendInvitation(invitation, emailController.text);
+    setStatus(Status.success);
+  }
 }

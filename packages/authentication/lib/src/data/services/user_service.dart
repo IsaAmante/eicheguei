@@ -96,6 +96,7 @@ class UserService {
             condominium: condominium,
             condRef: condominiumRef.path,
             access: parseToAccessType(condDoc.data()!['permission']),
+            accepted: false,
           );
         }
       }
