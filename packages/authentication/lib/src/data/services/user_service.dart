@@ -27,7 +27,7 @@ class UserService {
     if (email != null) {
       var snapshot = await _firestore.collection('users').doc(email).get();
       if (snapshot.exists) {
-        String name = snapshot.data()!['name'];
+        String name = snapshot.data()!['name'] ?? '';
         DocumentReference<Map<String, dynamic>> condominiumReference =
             snapshot.data()!['condominium'];
         Condominium? condominium;
